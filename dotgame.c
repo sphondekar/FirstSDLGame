@@ -92,6 +92,54 @@ int main(int argc, char* argv[])
     //Once texture is created from the surface we can release the surface 
     SDL_FreeSurface(surface);
     
+    //Now we want another image on the texture
+    //So we will load the freed surface with another image 
+    surface = IMG_Load("resources/jerry.png");
+    
+    //check if image is loaded or not
+    if (!surface)
+    {
+        printf("error creating surface\n");
+        SDL_DestroyRenderer(rend);
+        SDL_DestroyWindow(win);
+        SDL_Quit();
+        return 1;
+    }
+    
+    // Once the surface is created we create a texture from that surface
+    SDL_Texture* tex1 = SDL_CreateTextureFromSurface(rend, surface);
+    
+    if (!tex1)
+    {
+        printf("error creating texture: %s\n", SDL_GetError());
+        SDL_DestroyRenderer(rend);
+        SDL_DestroyWindow(win);
+        SDL_Quit();
+        return 1;
+    }
+    
+    //Once texture is created from the surface we can release the surface 
+    SDL_FreeSurface(surface);
+   	
+	//struct SDL_Rect to hold the position and size of the sprite
+	// SDL_Rect ->  x - the x location of the rectangle's upper left corner
+	//				y - the y location of the rectangle's upper left corer
+	//				w - the width of the rectangle
+	//				h - the height of the rectangle
+    SDL_Rect dest; 
+    
+    //SDL_QueryTexture - use this function to query the attribute of a texture
+    //Syntax - SDL_QueryTexture(texture , format of texture , int* access , int* w , int* h)
+    // w - a pointer to be filled in with the width of the texture in pixels
+    // h - a pointer to be filled in with the height of the texture in pixels
+    SDL_QueryTexture(tex1, NULL, NULL, &dest.w, &dest.h);
+    
+    //fill in the values for size and position of the sprite
+    dest.w /= 8;	//resize the sprite
+    dest.h /= 8;	//resize the sprite
+    dest.x = (640 - dest.w) / 2; 	//center the sprite
+    dest.y = (480 - dest.h) / 2;	//center the sprite
+    
     
     // set to 1 when window close button is pressed
     int close_requested = 0;
@@ -129,6 +177,9 @@ int main(int argc, char* argv[])
 	    // dstrect - the destination SDL_Rect structure or NULL.
 	    SDL_RenderCopy(rend, tex, NULL, NULL);
 	    
+	    //draw the sprite on the image on the window
+	    SDL_RenderCopy(rend, tex1, NULL, &dest);
+	    
 	    // use this function to update the screen with any rendering performed
 	    // Double buffer:  1. backbuffer   2. frontbuffer
 	    // when we draw something it is drawn on the back buffer and is not visible
@@ -143,6 +194,7 @@ int main(int argc, char* argv[])
     //Call this function to shutdown each initialized subsystem
     //clean all resources before shutdown
     SDL_DestroyTexture(tex);
+    SDL_DestroyTexture(tex1);
     SDL_DestroyRenderer(rend);
     SDL_DestroyWindow(win);
     SDL_Quit();
