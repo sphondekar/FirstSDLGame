@@ -92,29 +92,53 @@ int main(int argc, char* argv[])
     //Once texture is created from the surface we can release the surface 
     SDL_FreeSurface(surface);
     
-	// clear the window
-	// during starting, the renderer is filled with junk pixel data
-	// uptill now the everything (texture/surface) was created behind the scenes
-	// SDL_RenderClear will clear the junk data and show the created texture.
-    SDL_RenderClear(rend);
     
+    // set to 1 when window close button is pressed
+    int close_requested = 0;
     
-    // draw the image to the window
-    // SDL_RenderCopy - copy a portion of the texture to the current rendering target.
-    // SDL_RenderCopy(renderer, source texture , scrrect , dstrect)
-    // srcrect - the source SDL_Rect structure or NULL
-    // dstrect - the destination SDL_Rect structure or NULL.
-    SDL_RenderCopy(rend, tex, NULL, NULL);
-    
-    // use this function to update the screen with any rendering performed
-    // Double buffer:  1. backbuffer   2. frontbuffer
-    // when we draw something it is drawn on the back buffer and is not visible
-	// using SDL_RenderPresent(renderer) we send the image on the frontbuffer
-	// this makes the changes visible in the window 
-    SDL_RenderPresent(rend);
-    
-    // wait a few seconds
-    SDL_Delay(5000);
+    // animation loop will run until X button is not pressed
+    while (!close_requested)
+    {
+    	// process events
+        // create a variable event of type SDL_Event
+        SDL_Event event;
+        
+        //SDL_PollEvent is a function to poll for currently pending events
+        // returns 1 if there is a pending event or 0 if there is none available
+        while (SDL_PollEvent(&event))
+        {
+        	//handle various events here using event.type
+        	//SDL_QUIT is defined for user requested quit
+            if (event.type == SDL_QUIT)
+            {
+                close_requested = 1;
+            }
+        }
+        
+		// clear the window
+		// during starting, the renderer is filled with junk pixel data
+		// uptill now the everything (texture/surface) was created behind the scenes
+		// SDL_RenderClear will clear the junk data and show the created texture.
+	    SDL_RenderClear(rend);
+	    
+	    
+	    // draw the image to the window
+	    // SDL_RenderCopy - copy a portion of the texture to the current rendering target.
+	    // SDL_RenderCopy(renderer, source texture , scrrect , dstrect)
+	    // srcrect - the source SDL_Rect structure or NULL
+	    // dstrect - the destination SDL_Rect structure or NULL.
+	    SDL_RenderCopy(rend, tex, NULL, NULL);
+	    
+	    // use this function to update the screen with any rendering performed
+	    // Double buffer:  1. backbuffer   2. frontbuffer
+	    // when we draw something it is drawn on the back buffer and is not visible
+		// using SDL_RenderPresent(renderer) we send the image on the frontbuffer
+		// this makes the changes visible in the window 
+	    SDL_RenderPresent(rend);
+	    
+	    // wait 1/60th of a second
+        SDL_Delay(1000/60);
+	}
     
     //Call this function to shutdown each initialized subsystem
     //clean all resources before shutdown
