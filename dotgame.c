@@ -3,9 +3,10 @@
 #include <SDL_image.h>
 
 //constant values
-int WINDOW_WIDTH = 1152;
-int WINDOW_HEIGHT = 648;
-int SPEED = 200;
+int WINDOW_WIDTH =1024;
+int WINDOW_HEIGHT = 576;
+int SPEED_TOM = 200;
+int SPEED_JERRY = 200;
 
 
 int main(int argc, char* argv[])
@@ -155,6 +156,35 @@ int main(int argc, char* argv[])
     //Once texture is created from the surface we can release the surface 
     SDL_FreeSurface(surface);
     
+    //create one more object - our villain TOM 
+    surface = IMG_Load("resources/tom.png");
+    
+    //check if image is loaded or not
+    if (!surface)
+    {
+        printf("error creating surface\n");
+        SDL_DestroyRenderer(rend);
+        SDL_DestroyWindow(win);
+        SDL_Quit();
+        return 1;
+    }
+    
+    // Once the surface is created we create a texture from that surface
+    SDL_Texture* tex3 = SDL_CreateTextureFromSurface(rend, surface);
+    
+    if (!tex3)
+    {
+        printf("error creating texture: %s\n", SDL_GetError());
+        SDL_DestroyRenderer(rend);
+        SDL_DestroyWindow(win);
+        SDL_Quit();
+        return 1;
+    }
+    
+    //Once texture is created from the surface we can release the surface 
+    SDL_FreeSurface(surface);
+
+    
    	
 	//struct SDL_Rect to hold the position and size of the sprite
 	// SDL_Rect ->  x - the x location of the rectangle's upper left corner
@@ -166,6 +196,9 @@ int main(int argc, char* argv[])
     //to define the position of the object on the screen
     SDL_Rect destcheese; 
     
+    //to define the position of tom
+    SDL_Rect destTom;
+    
     //SDL_QueryTexture - use this function to query the attribute of a texture
     //Syntax - SDL_QueryTexture(texture , format of texture , int* access , int* w , int* h)
     // w - a pointer to be filled in with the width of the texture in pixels
@@ -174,10 +207,20 @@ int main(int argc, char* argv[])
     
     //to store the position of the cheese on the screen
     SDL_QueryTexture(tex2, NULL, NULL, &destcheese.w, &destcheese.h);
+
+
+    //to store the position of the tom on the screen
+    SDL_QueryTexture(tex3, NULL, NULL, &destTom.w, &destTom.h);
     
     //fill in the values for size and position of the sprite
     dest.w /= 10;	//resize the sprite
     dest.h /= 10;	//resize the sprite
+    
+        
+    //fill in the values foe the size and position of the sprite TOM
+    destTom.w /= 5;	//resize the tom
+    destTom.h /= 5;	//resize the tom
+    
     
     //resize the cheese object
     destcheese.w /= 15;
@@ -191,6 +234,12 @@ int main(int argc, char* argv[])
     float x_pos = (WINDOW_WIDTH - dest.w) / 2;
     float y_pos = (WINDOW_HEIGHT - dest.h) / 2;
     
+    
+    //to track the position of the sprite TOM declare two variables
+	// start sprite in center of screen
+    float x_pos_tom = (WINDOW_WIDTH - destTom.w);
+    float y_pos_tom = (WINDOW_HEIGHT - destTom.h);   
+    
    /* dest.x = (640 - dest.w) / 2; 	//center the sprite
     dest.y = (480 - dest.h) / 2;	//center the sprite*/       //testing
     
@@ -198,6 +247,12 @@ int main(int argc, char* argv[])
     // give sprite initial velocity
     float x_vel = 0;
     float y_vel = 0;
+    
+    
+    // to track the velocity of the sprite TOMwe declare two variables
+    // give sprite initial velocity
+    float x_vel_tom = SPEED_TOM;
+    float y_vel_tom = SPEED_TOM;
     
     // using keyboard to track the input from the user we declare four variables
     // keep track of which inputs are given
@@ -278,10 +333,10 @@ int main(int argc, char* argv[])
         //based on the keyboard input determine the keyboard input
         // determine velocity
         x_vel = y_vel = 0;
-        if (up && !down) y_vel = -SPEED;
-        if (down && !up) y_vel = SPEED;
-        if (left && !right) x_vel = -SPEED;
-        if (right && !left) x_vel = SPEED;
+        if (up && !down) y_vel = -SPEED_JERRY;
+        if (down && !up) y_vel = SPEED_JERRY;
+        if (left && !right) x_vel = -SPEED_JERRY;
+        if (right && !left) x_vel = SPEED_JERRY;
         
         
         // collision detection with bounds
@@ -323,6 +378,38 @@ int main(int argc, char* argv[])
         dest.x = (int) x_pos;
         
         
+        //collision detection with bounds for tom
+        // collision detection with bounds
+        if (x_pos_tom <= 0)
+        {
+            x_pos_tom = 0;
+            x_vel_tom = -x_vel_tom;
+        }
+        if (y_pos_tom <= 0)
+        {
+            y_pos_tom = 0;
+            y_vel_tom = -y_vel_tom;
+        }
+        if (x_pos_tom >= WINDOW_WIDTH - destTom.w) 
+        {
+            x_pos_tom = WINDOW_WIDTH - destTom.w;
+            x_vel_tom = -x_vel_tom;
+        }
+        if (y_pos_tom >= WINDOW_HEIGHT - destTom.h)
+        {
+            y_pos_tom = WINDOW_HEIGHT - destTom.h;
+            y_vel_tom = -y_vel_tom;
+        }
+
+        // update positions
+        x_pos_tom += x_vel_tom / 60;
+        y_pos_tom += y_vel_tom / 60;
+
+        // set the positions in the struct
+        destTom.y = (int) y_pos_tom;
+        destTom.x = (int) x_pos_tom;
+        
+        
         
 		// clear the window
 		// during starting, the renderer is filled with junk pixel data
@@ -345,6 +432,9 @@ int main(int argc, char* argv[])
 	    //draw the sprite on the image on the window
 	    SDL_RenderCopy(rend, tex1, NULL, &dest);
 	    
+	    
+	    //draw the sprite on the image on the window
+	    SDL_RenderCopy(rend, tex3, NULL, &destTom);
 	    
 	    
 	    // use this function to update the screen with any rendering performed
@@ -373,6 +463,25 @@ int main(int argc, char* argv[])
 	    	SDL_DestroyTexture(tex2);
 	    	//SDL_Quit();
 	    	//return 1;
+	    }
+	    
+	    
+	    //test code
+	    if(SDL_HasIntersection(&dest,&destTom))
+	    {
+	    	//To display a simple dialog box / message box 
+	    	//SDL_ShowSimpleMessageBox( flag , title , message , parent window)
+	    	// flag - SDL_MESSAGEBOX_ERROR -- for error dialog
+	    	// 		- SDL_MESSAGEBOX_WARNING -- warning dialog
+	    	//      - SDL_MESSAGEBOX_INFORMATION -- information dialog
+	    	// parent window - parent window or NULL for no parent
+	    	//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","Cheese collected",NULL);
+	    	//SDL_DestroyWindow(win);
+	    	SDL_DestroyTexture(tex1);
+	    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"GAME OVER!!","You loose....",NULL);
+	    	SDL_DestroyWindow(win);
+			SDL_Quit();
+	    	return 1;
 	    }
 	    
 	    // wait 1/60th of a second
