@@ -2,6 +2,12 @@
 #include<SDL.h>
 #include <SDL_image.h>
 
+//constant values
+int WINDOW_WIDTH = 1152;
+int WINDOW_HEIGHT = 648;
+int SPEED = 200;
+
+
 int main(int argc, char* argv[])
 {
 	//Initialize SDL using SDL_Init
@@ -23,7 +29,7 @@ int main(int argc, char* argv[])
     SDL_Window* win = SDL_CreateWindow("Dot Game",
 									SDL_WINDOWPOS_CENTERED,
 									SDL_WINDOWPOS_CENTERED,
-									640, 480, 0);
+									WINDOW_WIDTH, WINDOW_HEIGHT, 0);
 									
 	//Check if window created or not
     if (!win)
@@ -182,8 +188,8 @@ int main(int argc, char* argv[])
     
     //to track the position of the sprite declare two variables
 	// start sprite in center of screen
-    float x_pos = (640 - dest.w) / 2;
-    float y_pos = (480 - dest.h) / 2;
+    float x_pos = (WINDOW_WIDTH - dest.w) / 2;
+    float y_pos = (WINDOW_HEIGHT - dest.h) / 2;
     
    /* dest.x = (640 - dest.w) / 2; 	//center the sprite
     dest.y = (480 - dest.h) / 2;	//center the sprite*/       //testing
@@ -272,10 +278,10 @@ int main(int argc, char* argv[])
         //based on the keyboard input determine the keyboard input
         // determine velocity
         x_vel = y_vel = 0;
-        if (up && !down) y_vel = -200;
-        if (down && !up) y_vel = 200;
-        if (left && !right) x_vel = -200;
-        if (right && !left) x_vel = 200;
+        if (up && !down) y_vel = -SPEED;
+        if (down && !up) y_vel = SPEED;
+        if (left && !right) x_vel = -SPEED;
+        if (right && !left) x_vel = SPEED;
         
         
         // collision detection with bounds
@@ -305,8 +311,8 @@ int main(int argc, char* argv[])
         // collision detection with bounds
         if (x_pos <= 0) x_pos = 0;
         if (y_pos <= 0) y_pos = 0;
-        if (x_pos >= 640 - dest.w) x_pos = 640 - dest.w;
-        if (y_pos >= 480 - dest.h) y_pos = 480 - dest.h;
+        if (x_pos >= WINDOW_WIDTH - dest.w) x_pos = WINDOW_WIDTH - dest.w;
+        if (y_pos >= WINDOW_HEIGHT - dest.h) y_pos = WINDOW_HEIGHT - dest.h;
 
         // update positions according above calculations
         x_pos += x_vel / 60;
@@ -362,10 +368,11 @@ int main(int argc, char* argv[])
 	    	// 		- SDL_MESSAGEBOX_WARNING -- warning dialog
 	    	//      - SDL_MESSAGEBOX_INFORMATION -- information dialog
 	    	// parent window - parent window or NULL for no parent
-	    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","Cheese collected",NULL);
-	    	SDL_DestroyWindow(win);
-	    	SDL_Quit();
-	    	return 1;
+	    	//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","Cheese collected",NULL);
+	    	//SDL_DestroyWindow(win);
+	    	SDL_DestroyTexture(tex2);
+	    	//SDL_Quit();
+	    	//return 1;
 	    }
 	    
 	    // wait 1/60th of a second
