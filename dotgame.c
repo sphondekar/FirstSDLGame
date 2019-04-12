@@ -120,6 +120,35 @@ int main(int argc, char* argv[])
     
     //Once texture is created from the surface we can release the surface 
     SDL_FreeSurface(surface);
+    
+    //creating one more object called cheese on the window
+	surface = IMG_Load("resources/cheese.png");
+    
+    //check if image is loaded or not
+    if (!surface)
+    {
+        printf("error creating surface\n");
+        SDL_DestroyRenderer(rend);
+        SDL_DestroyWindow(win);
+        SDL_Quit();
+        return 1;
+    }
+    
+    // Once the surface is created we create a texture from that surface
+    SDL_Texture* tex2 = SDL_CreateTextureFromSurface(rend, surface);
+    
+    if (!tex2)
+    {
+        printf("error creating texture: %s\n", SDL_GetError());
+        SDL_DestroyRenderer(rend);
+        SDL_DestroyWindow(win);
+        SDL_Quit();
+        return 1;
+    }
+    
+    //Once texture is created from the surface we can release the surface 
+    SDL_FreeSurface(surface);
+    
    	
 	//struct SDL_Rect to hold the position and size of the sprite
 	// SDL_Rect ->  x - the x location of the rectangle's upper left corner
@@ -128,15 +157,28 @@ int main(int argc, char* argv[])
 	//				h - the height of the rectangle
     SDL_Rect dest; 
     
+    //to define the position of the object on the screen
+    SDL_Rect destcheese; 
+    
     //SDL_QueryTexture - use this function to query the attribute of a texture
     //Syntax - SDL_QueryTexture(texture , format of texture , int* access , int* w , int* h)
     // w - a pointer to be filled in with the width of the texture in pixels
     // h - a pointer to be filled in with the height of the texture in pixels
     SDL_QueryTexture(tex1, NULL, NULL, &dest.w, &dest.h);
     
+    //to store the position of the cheese on the screen
+    SDL_QueryTexture(tex2, NULL, NULL, &destcheese.w, &destcheese.h);
+    
     //fill in the values for size and position of the sprite
     dest.w /= 10;	//resize the sprite
     dest.h /= 10;	//resize the sprite
+    
+    //resize the cheese object
+    destcheese.w /= 15;
+	destcheese.h /= 15; 
+	//set the destination coordinstes of the x and y
+	destcheese.x = 200;
+	destcheese.y = 100;
     
     //to track the position of the sprite declare two variables
 	// start sprite in center of screen
@@ -293,6 +335,10 @@ int main(int argc, char* argv[])
 	    //draw the sprite on the image on the window
 	    SDL_RenderCopy(rend, tex1, NULL, &dest);
 	    
+	    //to draw cheese on the screen
+	    //draw the sprite on the image on the window
+	    SDL_RenderCopy(rend, tex2, NULL, &destcheese);
+	    
 	    // use this function to update the screen with any rendering performed
 	    // Double buffer:  1. backbuffer   2. frontbuffer
 	    // when we draw something it is drawn on the back buffer and is not visible
@@ -308,6 +354,7 @@ int main(int argc, char* argv[])
     //clean all resources before shutdown
     SDL_DestroyTexture(tex);
     SDL_DestroyTexture(tex1);
+    SDL_DestroyTexture(tex2);
     SDL_DestroyRenderer(rend);
     SDL_DestroyWindow(win);
     SDL_Quit();
