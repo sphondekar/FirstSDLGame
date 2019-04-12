@@ -332,12 +332,14 @@ int main(int argc, char* argv[])
 	    // dstrect - the destination SDL_Rect structure or NULL.
 	    SDL_RenderCopy(rend, tex, NULL, NULL);
 	    
-	    //draw the sprite on the image on the window
-	    SDL_RenderCopy(rend, tex1, NULL, &dest);
-	    
 	    //to draw cheese on the screen
 	    //draw the sprite on the image on the window
 	    SDL_RenderCopy(rend, tex2, NULL, &destcheese);
+	    
+	    //draw the sprite on the image on the window
+	    SDL_RenderCopy(rend, tex1, NULL, &dest);
+	    
+	    
 	    
 	    // use this function to update the screen with any rendering performed
 	    // Double buffer:  1. backbuffer   2. frontbuffer
@@ -345,6 +347,26 @@ int main(int argc, char* argv[])
 		// using SDL_RenderPresent(renderer) we send the image on the frontbuffer
 		// this makes the changes visible in the window 
 	    SDL_RenderPresent(rend);
+	    
+	    
+	    //now to check the collision detection between our sprite jerry and cheese we use the 
+	    //SDL_HasIntersection( struct SDL_Rect of texture 1, struct SDL_Rect of texture 2)
+	    //to determine collosion we simply draw am imaginary rectangle around our objects
+	    //the size and position of these objects is stored in the struct SDL_Rect
+	    //SDL_HasIntersection returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise
+	    if(SDL_HasIntersection(&dest,&destcheese))
+	    {
+	    	//To display a simple dialog box / message box 
+	    	//SDL_ShowSimpleMessageBox( flag , title , message , parent window)
+	    	// flag - SDL_MESSAGEBOX_ERROR -- for error dialog
+	    	// 		- SDL_MESSAGEBOX_WARNING -- warning dialog
+	    	//      - SDL_MESSAGEBOX_INFORMATION -- information dialog
+	    	// parent window - parent window or NULL for no parent
+	    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","Cheese collected",NULL);
+	    	SDL_DestroyWindow(win);
+	    	SDL_Quit();
+	    	return 1;
+	    }
 	    
 	    // wait 1/60th of a second
         SDL_Delay(1000/60);
@@ -358,4 +380,6 @@ int main(int argc, char* argv[])
     SDL_DestroyRenderer(rend);
     SDL_DestroyWindow(win);
     SDL_Quit();
+    
+    return 0;
 }
