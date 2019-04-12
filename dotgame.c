@@ -135,8 +135,8 @@ int main(int argc, char* argv[])
     SDL_QueryTexture(tex1, NULL, NULL, &dest.w, &dest.h);
     
     //fill in the values for size and position of the sprite
-    dest.w /= 8;	//resize the sprite
-    dest.h /= 8;	//resize the sprite
+    dest.w /= 10;	//resize the sprite
+    dest.h /= 10;	//resize the sprite
     
     //to track the position of the sprite declare two variables
 	// start sprite in center of screen
@@ -148,8 +148,15 @@ int main(int argc, char* argv[])
     
     // to track the velocity of the sprite we declare two variables
     // give sprite initial velocity
-    float x_vel = 300;
-    float y_vel = 300;
+    float x_vel = 0;
+    float y_vel = 0;
+    
+    // using keyboard to track the input from the user we declare four variables
+    // keep track of which inputs are given
+    int up = 0;
+    int down = 0;
+    int left = 0;
+    int right = 0;
     
     // set to 1 when window close button is pressed
     int close_requested = 0;
@@ -167,16 +174,72 @@ int main(int argc, char* argv[])
         {
         	//handle various events here using event.type
         	//SDL_QUIT is defined for user requested quit
-            if (event.type == SDL_QUIT)
+        	//handle keyboard events from the using SDL_KEYDOWN and SDL_KEYUP
+        	//each key is defoined by a scan code preassigned to it 
+            switch (event.type) //test code
             {
+            case SDL_QUIT:
                 close_requested = 1;
+                break;
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.scancode)
+                {
+                case SDL_SCANCODE_W:
+                case SDL_SCANCODE_UP:
+                    up = 1;
+                    break;
+                case SDL_SCANCODE_A:
+                case SDL_SCANCODE_LEFT:
+                    left = 1;
+                    break;
+                case SDL_SCANCODE_S:
+                case SDL_SCANCODE_DOWN:
+                    down = 1;
+                    break;
+                case SDL_SCANCODE_D:
+                case SDL_SCANCODE_RIGHT:
+                    right = 1;
+                    break;
+                }
+                break;
+            case SDL_KEYUP:
+                switch (event.key.keysym.scancode)
+                {
+                case SDL_SCANCODE_W:
+                case SDL_SCANCODE_UP:
+                    up = 0;
+                    break;
+                case SDL_SCANCODE_A:
+                case SDL_SCANCODE_LEFT:
+                    left = 0;
+                    break;
+                case SDL_SCANCODE_S:
+                case SDL_SCANCODE_DOWN:
+                    down = 0;
+                    break;
+                case SDL_SCANCODE_D:
+                case SDL_SCANCODE_RIGHT:
+                    right = 0;
+                    break;
+                }
+                break;
             }
         }
+        
+        
+        //based on the keyboard input determine the keyboard input
+        // determine velocity
+        x_vel = y_vel = 0;
+        if (up && !down) y_vel = -200;
+        if (down && !up) y_vel = 200;
+        if (left && !right) x_vel = -200;
+        if (right && !left) x_vel = 200;
+        
         
         // collision detection with bounds
         // to remain within the bounds of the window the x_pos and y_pos should remain within
         // the screen co-ordinates (0,0), (0,480), (640,0) and (640,480)
-        if (x_pos <= 0)
+        /*if (x_pos <= 0)
         {
             x_pos = 0;
             x_vel = -x_vel;
@@ -195,7 +258,13 @@ int main(int argc, char* argv[])
         {
             y_pos = 480 - dest.h;
             y_vel = -y_vel;
-        }
+        }*/
+        
+        // collision detection with bounds
+        if (x_pos <= 0) x_pos = 0;
+        if (y_pos <= 0) y_pos = 0;
+        if (x_pos >= 640 - dest.w) x_pos = 640 - dest.w;
+        if (y_pos >= 480 - dest.h) y_pos = 480 - dest.h;
 
         // update positions according above calculations
         x_pos += x_vel / 60;
