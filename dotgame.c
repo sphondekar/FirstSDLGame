@@ -137,9 +137,19 @@ int main(int argc, char* argv[])
     //fill in the values for size and position of the sprite
     dest.w /= 8;	//resize the sprite
     dest.h /= 8;	//resize the sprite
-    dest.x = (640 - dest.w) / 2; 	//center the sprite
-    dest.y = (480 - dest.h) / 2;	//center the sprite
     
+    //to track the position of the sprite declare two variables
+	// start sprite in center of screen
+    float x_pos = (640 - dest.w) / 2;
+    float y_pos = (480 - dest.h) / 2;
+    
+   /* dest.x = (640 - dest.w) / 2; 	//center the sprite
+    dest.y = (480 - dest.h) / 2;	//center the sprite*/       //testing
+    
+    // to track the velocity of the sprite we declare two variables
+    // give sprite initial velocity
+    float x_vel = 300;
+    float y_vel = 300;
     
     // set to 1 when window close button is pressed
     int close_requested = 0;
@@ -162,6 +172,40 @@ int main(int argc, char* argv[])
                 close_requested = 1;
             }
         }
+        
+        // collision detection with bounds
+        // to remain within the bounds of the window the x_pos and y_pos should remain within
+        // the screen co-ordinates (0,0), (0,480), (640,0) and (640,480)
+        if (x_pos <= 0)
+        {
+            x_pos = 0;
+            x_vel = -x_vel;
+        }
+        if (y_pos <= 0)
+        {
+            y_pos = 0;
+            y_vel = -y_vel;
+        }
+        if (x_pos >= 640 - dest.w) 
+        {
+            x_pos = 640 - dest.w;
+            x_vel = -x_vel;
+        }
+        if (y_pos >= 480 - dest.h)
+        {
+            y_pos = 480 - dest.h;
+            y_vel = -y_vel;
+        }
+
+        // update positions according above calculations
+        x_pos += x_vel / 60;
+        y_pos += y_vel / 60;
+
+        // set the positions in the structc SDL_rect
+        dest.y = (int) y_pos;
+        dest.x = (int) x_pos;
+        
+        
         
 		// clear the window
 		// during starting, the renderer is filled with junk pixel data
