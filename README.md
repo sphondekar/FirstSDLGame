@@ -37,3 +37,6 @@ step11 : Collision detection between two
 step12 : Adding TOM and programming its 
 	 movements with collision detection.
 ------------------------------------------------ 
+step12 : Animating jerry with the newly
+	 created 2 stage jerry sprite
+------------------------------------------------
