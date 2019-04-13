@@ -5,7 +5,7 @@
 //constant values
 int WINDOW_WIDTH =1024;
 int WINDOW_HEIGHT = 576;
-int SPEED_TOM = 200;
+int SPEED_TOM = 500;
 int SPEED_JERRY = 200;
 
 
@@ -461,8 +461,10 @@ int main(int argc, char* argv[])
 	    	//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","Cheese collected",NULL);
 	    	//SDL_DestroyWindow(win);
 	    	SDL_DestroyTexture(tex2);
-	    	//SDL_Quit();
-	    	//return 1;
+	    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","Cheese collected",NULL);
+	    	SDL_DestroyWindow(win);
+	    	SDL_Quit();
+	    	return 1;
 	    }
 	    
 	    
