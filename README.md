@@ -33,4 +33,7 @@ step10 : Adding one more sprite named cheese
 ------------------------------------------------
 step11 : Collision detection between two
 	 sprites
-------------------------------------------------  
+------------------------------------------------ 
+step12 : Adding TOM and programming its 
+	 movements with collision detection.
+------------------------------------------------ 
