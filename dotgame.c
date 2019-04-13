@@ -3,7 +3,7 @@
 #include <SDL_image.h>
 
 //constant values
-int WINDOW_WIDTH =1024;
+int WINDOW_WIDTH = 1024;
 int WINDOW_HEIGHT = 576;
 int SPEED_TOM = 500;
 int SPEED_JERRY = 200;
@@ -101,7 +101,8 @@ int main(int argc, char* argv[])
     
     //Now we want another image on the texture
     //So we will load the freed surface with another image 
-    surface = IMG_Load("resources/jerry.png");
+    //surface = IMG_Load("resources/jerry.png");
+    surface = IMG_Load("resources/jerrysprite2.png");
     
     //check if image is loaded or not
     if (!surface)
@@ -213,9 +214,10 @@ int main(int argc, char* argv[])
     SDL_QueryTexture(tex3, NULL, NULL, &destTom.w, &destTom.h);
     
     //fill in the values for size and position of the sprite
-    dest.w /= 10;	//resize the sprite
-    dest.h /= 10;	//resize the sprite
-    
+    //no need to resize as we have used a small image now
+//    dest.w /= 10;	//resize the sprite
+//    dest.h /= 10;	//resize the sprite
+ 
         
     //fill in the values foe the size and position of the sprite TOM
     destTom.w /= 5;	//resize the tom
@@ -270,6 +272,23 @@ int main(int argc, char* argv[])
     	// process events
         // create a variable event of type SDL_Event
         SDL_Event event;
+        
+        //To animate the jerry sprite we have used two jerry sprite (in single image file)
+		//to switch between these two states of images we need to give some time for this switching  
+		//so we will use the SDL_GetTicks() function which returns an unsigned 32-bit value representing  
+		//	the number of milliseconds since the SDL library initialized.
+        Uint32 ticks = SDL_GetTicks();
+        //now we divide the returned milliseconds value into seconds by dividing it by 100
+        //then divide the seconds by the number of sprites in our spritesheet, in this case 2
+        //Using the modulus operator ensures that the sprite number wraps around,
+		// so it is never greater than 2 (remember that counting is always zero-based, so our sprites are numbered 0 to 1).
+        Uint32 sprite = (ticks / 100) % 2;
+        //we're passing in the sprite value (between 0 and 1, based on the current time) 
+		//multiplied by 78 (the width of a single sprite). So with each second that passes, 
+		//the sprite will be extracted from the image at x=0, then x=78.
+        SDL_Rect srcrect = { sprite * 78, 0, 78, 47 };//(x, y , w,h)
+        dest = { x_pos, y_pos, 78, 47 };
+
         
         //SDL_PollEvent is a function to poll for currently pending events
         // returns 1 if there is a pending event or 0 if there is none available
@@ -430,7 +449,9 @@ int main(int argc, char* argv[])
 	    SDL_RenderCopy(rend, tex2, NULL, &destcheese);
 	    
 	    //draw the sprite on the image on the window
-	    SDL_RenderCopy(rend, tex1, NULL, &dest);
+	    // and to animate the sprite we use the newly formed SDL_Rect srcrect which contains the adderss of the 
+	    // two jerry sprites.
+	    SDL_RenderCopy(rend, tex1, &srcrect, &dest);
 	    
 	    
 	    //draw the sprite on the image on the window
