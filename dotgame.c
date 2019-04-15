@@ -9,7 +9,7 @@
 int WINDOW_WIDTH = 1024;
 int WINDOW_HEIGHT = 576;
 int SPEED_TOM = 300;
-int SPEED_JERRY = 200;
+int SPEED_JERRY = 300;
 int NOOFCHEESE = 5;
 
 
@@ -20,12 +20,18 @@ SDL_Rect destJerry;
 float x_pos_tom, y_pos_tom, x_vel_tom, y_vel_tom;
 SDL_Rect destTom;
 
-SDL_Rect destCheese; 
+SDL_Rect destCheese;
+
+SDL_Rect play;
+SDL_Rect quit; 
 
 SDL_Window* win = NULL;
 SDL_Renderer* rend = NULL;
 SDL_Surface* surface = NULL;
 SDL_Texture* texture = NULL;
+SDL_Texture* startScreen = NULL;
+SDL_Texture* playButton = NULL;
+SDL_Texture* exitButton = NULL;
 SDL_Texture* gamebackground = NULL;
 SDL_Texture* jerry = NULL;
 SDL_Texture* cheese = NULL;
@@ -129,6 +135,18 @@ SDL_Texture* addImageCreateTexture(char imgpath[])
     return texture;
 }
 
+
+void createMenu()
+{
+	SDL_QueryTexture(playButton, NULL, NULL, &play.w, &play.h);
+	SDL_QueryTexture(exitButton, NULL, NULL, &quit.w, &quit.h);
+	
+	play.x=350;
+	play.y=450;
+	
+	quit.x=600;
+	quit.y=450;
+}
 
 void moveJerry(int up, int down, int left, int right)
 {
@@ -255,10 +273,20 @@ void destroyAll()
 
 int main(int argc, char* argv[])
 {
+	int mainmenu = 0;
 	int cheeseCount=0;
+
 	initializeSDL();
     
     setupScreen();
+    
+    startScreen = addImageCreateTexture("resources/startscreen.png");
+    
+    playButton = addImageCreateTexture("resources/playbutton.png");
+    
+    exitButton = addImageCreateTexture("resources/exitbutton.png");
+    
+    createMenu();
     
     gamebackground = addImageCreateTexture("resources/background.png");
     
@@ -352,6 +380,7 @@ int main(int argc, char* argv[])
     int close_requested = 0;
     
     // animation loop will run until X button is not pressed
+
     while (!close_requested)
     {
     	// process events
@@ -374,9 +403,11 @@ int main(int argc, char* argv[])
         SDL_Rect srcJerry = { jerrysprite * 78, 0, 78, 47 };//(x, y , w,h)
         destJerry = { x_pos_jerry, y_pos_jerry, 78, 47 };
 
+		
         
         //SDL_PollEvent is a function to poll for currently pending events
         // returns 1 if there is a pending event or 0 if there is none available
+        
         while (SDL_PollEvent(&event))
         {
         	//handle various events here using event.type
@@ -433,10 +464,15 @@ int main(int argc, char* argv[])
                 break;
             }
         }
+          
+        
+        // get cursor position relative to window
+        int mouse_x, mouse_y;
+        int buttons = SDL_GetMouseState(&mouse_x, &mouse_y);
         
         moveJerry(up,down,left,right);
         
-        moveTom();
+       // moveTom();
         
         
         
@@ -447,6 +483,15 @@ int main(int argc, char* argv[])
 	    SDL_RenderClear(rend);
 	    
 	    
+	    if(mainmenu==0)
+	    {
+	    	SDL_RenderCopy(rend, startScreen, NULL, NULL);
+	    
+	    	SDL_RenderCopy(rend, playButton, NULL, &play);
+	    	SDL_RenderCopy(rend, exitButton, NULL, &quit);
+		}
+		else{
+		moveTom();
 	    // draw the image to the window
 	    // SDL_RenderCopy - copy a portion of the texture to the current rendering target.
 	    // SDL_RenderCopy(renderer, source texture , scrrect , dstrect)
@@ -467,13 +512,48 @@ int main(int argc, char* argv[])
 	    //draw the sprite on the image on the window
 	    SDL_RenderCopy(rend, tom, NULL, &destTom);
 	    
-	    
+		}
 	    // use this function to update the screen with any rendering performed
 	    // Double buffer:  1. backbuffer   2. frontbuffer
 	    // when we draw something it is drawn on the back buffer and is not visible
 		// using SDL_RenderPresent(renderer) we send the image on the frontbuffer
 		// this makes the changes visible in the window 
 	    SDL_RenderPresent(rend);
+	    
+	    
+	    if(mouse_x>=play.x && mouse_x<=play.x+play.w)
+	 	{
+	 		if(mouse_y>=play.y && mouse_y<=play.y+play.h)
+	 		{
+		    // reverse velocity if mouse button 1 pressed
+	        if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT))
+	        {
+	           	//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"Play","Play button pressed",NULL);
+		    	//SDL_DestroyWindow(win);
+		    	//SDL_Quit();
+		    	//return 1;
+		    	SDL_DestroyTexture(startScreen);
+		    	SDL_DestroyTexture(playButton);
+		    	SDL_DestroyTexture(exitButton);
+		    	mainmenu=1;
+	        }
+	    	}
+	    }
+	    
+	    
+	    if(mouse_x>=quit.x && mouse_x<=quit.x+quit.w)
+	 	{
+	 		if(mouse_y>=quit.y && mouse_y<=quit.y+quit.h)
+	 		{
+		    // reverse velocity if mouse button 1 pressed
+	        if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT))
+	        {
+	           destroyAll();
+		    	return 1;
+	        }
+	    	}
+	    }
+	    
 	    
 	    
 	    //now to check the collision detection between our sprite jerry and cheese we use the 
@@ -519,7 +599,7 @@ int main(int argc, char* argv[])
 	    	//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","Cheese collected",NULL);
 	    	//SDL_DestroyWindow(win);
 	    	SDL_DestroyTexture(jerry);
-	    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"GAME OVER!!","You loose....",NULL);
+	    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"GAME OVER!!","You lose....",NULL);
 	    	SDL_DestroyWindow(win);
 			SDL_Quit();
 	    	return 1;
