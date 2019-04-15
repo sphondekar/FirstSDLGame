@@ -8,8 +8,9 @@
 //constant values
 int WINDOW_WIDTH = 1024;
 int WINDOW_HEIGHT = 576;
-int SPEED_TOM = 500;
+int SPEED_TOM = 300;
 int SPEED_JERRY = 200;
+int NOOFCHEESE = 5;
 
 
 float x_pos_jerry, y_pos_jerry, x_vel_jerry, y_vel_jerry;
@@ -18,6 +19,8 @@ SDL_Rect destJerry;
 
 float x_pos_tom, y_pos_tom, x_vel_tom, y_vel_tom;
 SDL_Rect destTom;
+
+SDL_Rect destCheese; 
 
 SDL_Window* win = NULL;
 SDL_Renderer* rend = NULL;
@@ -221,6 +224,20 @@ void moveTom()
 }
 
 
+void createCheese()
+{
+	//to store the position of the cheese on the screen
+    SDL_QueryTexture(cheese, NULL, NULL, &destCheese.w, &destCheese.h);
+    //resize the cheese object
+    destCheese.w /= 15;
+	destCheese.h /= 15; 
+	//use current time as seed for random generator
+	srand(time(NULL)*100);
+	//set the destination coordinstes of the x and y
+	destCheese.x = rand() % (WINDOW_WIDTH-destCheese.w);
+	destCheese.y = rand() % (WINDOW_HEIGHT-destCheese.h);
+}
+
 void destroyAll()
 {
 	//Call this function to shutdown each initialized subsystem
@@ -238,6 +255,7 @@ void destroyAll()
 
 int main(int argc, char* argv[])
 {
+	int cheeseCount=0;
 	initializeSDL();
     
     setupScreen();
@@ -249,6 +267,8 @@ int main(int argc, char* argv[])
     cheese = addImageCreateTexture("resources/cheese.png");
     
     tom = addImageCreateTexture("resources/tom.png");
+    
+    createCheese();
 
 	//struct SDL_Rect to hold the position and size of the sprite
 	// SDL_Rect ->  x - the x location of the rectangle's upper left corner
@@ -258,7 +278,7 @@ int main(int argc, char* argv[])
 //   SDL_Rect destJerry; 
     
     //to define the position of the object on the screen
-    SDL_Rect destCheese; 
+//    SDL_Rect destCheese; 
     
     //to define the position of tom
 //    SDL_Rect destTom;
@@ -269,8 +289,7 @@ int main(int argc, char* argv[])
     // h - a pointer to be filled in with the height of the texture in pixels
     SDL_QueryTexture(jerry, NULL, NULL, &destJerry.w, &destJerry.h);
     
-    //to store the position of the cheese on the screen
-    SDL_QueryTexture(cheese, NULL, NULL, &destCheese.w, &destCheese.h);
+    
 
 
     //to store the position of the tom on the screen
@@ -287,15 +306,15 @@ int main(int argc, char* argv[])
     destTom.h /= 5;	//resize the tom
     
     
-    //resize the cheese object
-    destCheese.w /= 15;
-	destCheese.h /= 15; 
+//    //resize the cheese object
+//    destCheese.w /= 15;
+//	destCheese.h /= 15; 
 	
-	//use current time as seed for random generator
-	srand(time(NULL)*100);
-	//set the destination coordinstes of the x and y
-	destCheese.x = rand() % (WINDOW_WIDTH-destCheese.w);
-	destCheese.y = rand() % (WINDOW_HEIGHT-destCheese.h);
+//	//use current time as seed for random generator
+//	srand(time(NULL)*100);
+//	//set the destination coordinstes of the x and y
+//	destCheese.x = rand() % (WINDOW_WIDTH-destCheese.w);
+//	destCheese.y = rand() % (WINDOW_HEIGHT-destCheese.h);
     
     //to track the position of the sprite declare two variables
 	// start sprite in center of screen
@@ -473,10 +492,18 @@ int main(int argc, char* argv[])
 	    	//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","Cheese collected",NULL);
 	    	//SDL_DestroyWindow(win);
 	    	SDL_DestroyTexture(cheese);
-	    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","Cheese collected",NULL);
-	    	SDL_DestroyWindow(win);
-	    	SDL_Quit();
-	    	return 1;
+	    	if(cheeseCount <= NOOFCHEESE)
+	    	{
+	    		cheese = addImageCreateTexture("resources/cheese.png");
+	    		createCheese();
+	    		cheeseCount++;
+			}
+			else{
+	    		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","All Cheese collected",NULL);
+	    		SDL_DestroyWindow(win);
+	    		SDL_Quit();
+	    		return 1;
+	    	}
 	    }
 	    
 	    
