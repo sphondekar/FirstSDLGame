@@ -1,6 +1,9 @@
 #include<stdio.h>
 #include<SDL.h>
 #include <SDL_image.h>
+#include<string.h>
+#include<stdlib.h>
+#include<time.h>
 
 //constant values
 int WINDOW_WIDTH = 1024;
@@ -9,7 +12,24 @@ int SPEED_TOM = 500;
 int SPEED_JERRY = 200;
 
 
-int main(int argc, char* argv[])
+float x_pos_jerry, y_pos_jerry, x_vel_jerry, y_vel_jerry;
+SDL_Rect destJerry;
+
+
+float x_pos_tom, y_pos_tom, x_vel_tom, y_vel_tom;
+SDL_Rect destTom;
+
+SDL_Window* win = NULL;
+SDL_Renderer* rend = NULL;
+SDL_Surface* surface = NULL;
+SDL_Texture* texture = NULL;
+SDL_Texture* gamebackground = NULL;
+SDL_Texture* jerry = NULL;
+SDL_Texture* cheese = NULL;
+SDL_Texture* tom = NULL;
+
+//functions for each tasks
+void initializeSDL()
 {
 	//Initialize SDL using SDL_Init
 	//SDL_INIT_EVERYTHING - initializes all SDL subsystem
@@ -17,17 +37,20 @@ int main(int argc, char* argv[])
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         printf("error initializing SDL: %s\n", SDL_GetError());
-        return 1;
     }
     
     printf("initialization successful!\n");
-    
-    //Create a window of 640 x 480 resolution using SDL_CreateWindow
+}
+
+
+void setupScreen()
+{
+	//Create a window of 640 x 480 resolution using SDL_CreateWindow
     //SYNTAX : SDL_CreateWindow("Title", int x, int y, int w, int h, Uint32 flags) 
     //x or y  = SDL_WINDOWPOS_CENTERED or SDL_WINDOWPOS_UNDEFINED
     //width w = 640px   and    height h = 480 px
     //flags =  0
-    SDL_Window* win = SDL_CreateWindow("Dot Game",
+    win = SDL_CreateWindow("Dot Game",
 									SDL_WINDOWPOS_CENTERED,
 									SDL_WINDOWPOS_CENTERED,
 									WINDOW_WIDTH, WINDOW_HEIGHT, 0);
@@ -37,7 +60,6 @@ int main(int argc, char* argv[])
     {
         printf("error creating window: %s\n", SDL_GetError());
         SDL_Quit();
-	    return 1;
     }
     
     
@@ -51,7 +73,7 @@ int main(int argc, char* argv[])
 	//		SDL_RENDERER_PRESENTVSYNC - present is synchronised with the refresh rate
 	// 		SDL_RENDERER_TARGETTEXTURE - the renderer supports rendering to texture
     Uint32 render_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
-    SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
+    rend = SDL_CreateRenderer(win, -1, render_flags);
     
     //check if renderer is created or not
     if (!rend)
@@ -59,14 +81,19 @@ int main(int argc, char* argv[])
       printf("error creating renderer: %s\n", SDL_GetError());
       SDL_DestroyWindow(win);
       SDL_Quit();
-      return 1;
     }
-    
-    // load the image into memory using SDL_image library function
+}
+
+
+SDL_Texture* addImageCreateTexture(char imgpath[])
+{
+	// load the image into memory using SDL_image library function
     // A window consists of a surface (and be an image)
     // We load the image by using IMG_Load("path to image")
-    SDL_Surface* surface = IMG_Load("resources/background.png");
-    
+    char path[50];
+    strcpy(path,imgpath);
+    surface = IMG_Load(path);
+     
     //check if image is loaded or not
     if (!surface)
     {
@@ -74,149 +101,185 @@ int main(int argc, char* argv[])
         SDL_DestroyRenderer(rend);
         SDL_DestroyWindow(win);
         SDL_Quit();
-        return 1;
     }
-    
-    // load the image data into the graphics hardware's memory
+     // load the image data into the graphics hardware's memory
     // Once the surface is created we create a texture from that surface
     // The reason for creating texture from the surface is :
 	// 1.SDL_Surface is just a struct containing pixel information, while SDL_Texture
 	//		is an efficient, driver specific representation of pixel data.
 	// 2.SDL_Surface uses software rendering (via CPU), while SDL_Texture uses hardware rendering
     //We use SDL_CreateTextureFromSurface(renderer , surface)
-	SDL_Texture* tex = SDL_CreateTextureFromSurface(rend, surface);
+    
+	texture = SDL_CreateTextureFromSurface(rend, surface);
     
     //check if texture is successfully created or not
-    if (!tex)
+    if (!texture)
     {
         printf("error creating texture: %s\n", SDL_GetError());
         SDL_DestroyRenderer(rend);
         SDL_DestroyWindow(win);
         SDL_Quit();
-        return 1;
     }
     
     //Once texture is created from the surface we can release the surface 
     SDL_FreeSurface(surface);
-    
-    //Now we want another image on the texture
-    //So we will load the freed surface with another image 
-    //surface = IMG_Load("resources/jerry.png");
-    surface = IMG_Load("resources/jerrysprite2.png");
-    
-    //check if image is loaded or not
-    if (!surface)
-    {
-        printf("error creating surface\n");
-        SDL_DestroyRenderer(rend);
-        SDL_DestroyWindow(win);
-        SDL_Quit();
-        return 1;
-    }
-    
-    // Once the surface is created we create a texture from that surface
-    SDL_Texture* tex1 = SDL_CreateTextureFromSurface(rend, surface);
-    
-    if (!tex1)
-    {
-        printf("error creating texture: %s\n", SDL_GetError());
-        SDL_DestroyRenderer(rend);
-        SDL_DestroyWindow(win);
-        SDL_Quit();
-        return 1;
-    }
-    
-    //Once texture is created from the surface we can release the surface 
-    SDL_FreeSurface(surface);
-    
-    //creating one more object called cheese on the window
-	surface = IMG_Load("resources/cheese.png");
-    
-    //check if image is loaded or not
-    if (!surface)
-    {
-        printf("error creating surface\n");
-        SDL_DestroyRenderer(rend);
-        SDL_DestroyWindow(win);
-        SDL_Quit();
-        return 1;
-    }
-    
-    // Once the surface is created we create a texture from that surface
-    SDL_Texture* tex2 = SDL_CreateTextureFromSurface(rend, surface);
-    
-    if (!tex2)
-    {
-        printf("error creating texture: %s\n", SDL_GetError());
-        SDL_DestroyRenderer(rend);
-        SDL_DestroyWindow(win);
-        SDL_Quit();
-        return 1;
-    }
-    
-    //Once texture is created from the surface we can release the surface 
-    SDL_FreeSurface(surface);
-    
-    //create one more object - our villain TOM 
-    surface = IMG_Load("resources/tom.png");
-    
-    //check if image is loaded or not
-    if (!surface)
-    {
-        printf("error creating surface\n");
-        SDL_DestroyRenderer(rend);
-        SDL_DestroyWindow(win);
-        SDL_Quit();
-        return 1;
-    }
-    
-    // Once the surface is created we create a texture from that surface
-    SDL_Texture* tex3 = SDL_CreateTextureFromSurface(rend, surface);
-    
-    if (!tex3)
-    {
-        printf("error creating texture: %s\n", SDL_GetError());
-        SDL_DestroyRenderer(rend);
-        SDL_DestroyWindow(win);
-        SDL_Quit();
-        return 1;
-    }
-    
-    //Once texture is created from the surface we can release the surface 
-    SDL_FreeSurface(surface);
+    return texture;
+}
 
+
+void moveJerry(int up, int down, int left, int right)
+{
+	//based on the keyboard input determine the keyboard input
+        // determine velocity
+        x_vel_jerry = y_vel_jerry = 0;
+        if (up && !down) 
+			y_vel_jerry = -SPEED_JERRY;
+        else if (down && !up)
+			y_vel_jerry = SPEED_JERRY;
+        else if (left && !right) 
+			x_vel_jerry = -SPEED_JERRY;
+        else if (right && !left) 
+			x_vel_jerry = SPEED_JERRY;
+        
+        
+        // collision detection with bounds
+        // to remain within the bounds of the window the x_pos and y_pos should remain within
+        // the screen co-ordinates (0,0), (0,480), (640,0) and (640,480)
+        /*if (x_pos <= 0)
+        {
+            x_pos = 0;
+            x_vel = -x_vel;
+        }
+        if (y_pos <= 0)
+        {
+            y_pos = 0;
+            y_vel = -y_vel;
+        }
+        if (x_pos >= 640 - destJerry.w) 
+        {
+            x_pos = 640 - destJerry.w;
+            x_vel = -x_vel;
+        }
+        if (y_pos >= 480 - destJerry.h)
+        {
+            y_pos = 480 - destJerry.h;
+            y_vel = -y_vel;
+        }*/
+        
+        // collision detection with bounds
+        if (x_pos_jerry <= 0) 
+			x_pos_jerry = 0;
+        else if (y_pos_jerry <= 0) 
+			y_pos_jerry = 0;
+        else if (x_pos_jerry >= WINDOW_WIDTH - destJerry.w) 
+			x_pos_jerry = WINDOW_WIDTH - destJerry.w;
+        else if (y_pos_jerry >= WINDOW_HEIGHT - destJerry.h) 
+			y_pos_jerry = WINDOW_HEIGHT - destJerry.h;
+
+        // update positions according above calculations
+        x_pos_jerry += x_vel_jerry / 60;
+        y_pos_jerry += y_vel_jerry / 60;
+
+        // set the positions in the structc SDL_rect
+        destJerry.y = (int) y_pos_jerry;
+        destJerry.x = (int) x_pos_jerry;
+}
+
+
+void moveTom()
+{
+	 //collision detection with bounds for tom
+        // collision detection with bounds
+        if (x_pos_tom <= 0)
+        {
+            x_pos_tom = 0;
+            x_vel_tom = -x_vel_tom;
+        }
+        if (y_pos_tom <= 0)
+        {
+            y_pos_tom = 0;
+            y_vel_tom = -y_vel_tom;
+        }
+        if (x_pos_tom >= WINDOW_WIDTH - destTom.w) 
+        {
+            x_pos_tom = WINDOW_WIDTH - destTom.w;
+            x_vel_tom = -x_vel_tom;
+        }
+        if (y_pos_tom >= WINDOW_HEIGHT - destTom.h)
+        {
+            y_pos_tom = WINDOW_HEIGHT - destTom.h;
+            y_vel_tom = -y_vel_tom;
+        }
+
+        // update positions
+        x_pos_tom += x_vel_tom / 60;
+        y_pos_tom += y_vel_tom / 60;
+
+        // set the positions in the struct
+        destTom.y = (int) y_pos_tom;
+        destTom.x = (int) x_pos_tom;
+}
+
+
+void destroyAll()
+{
+	//Call this function to shutdown each initialized subsystem
+    //clean all resources before shutdown
+    SDL_DestroyTexture(gamebackground);
+    SDL_DestroyTexture(jerry);
+    SDL_DestroyTexture(cheese);
+    SDL_DestroyRenderer(rend);
+    SDL_DestroyWindow(win);
+    SDL_Quit();
+}
+
+
+
+
+int main(int argc, char* argv[])
+{
+	initializeSDL();
     
-   	
+    setupScreen();
+    
+    gamebackground = addImageCreateTexture("resources/background.png");
+    
+    jerry = addImageCreateTexture("resources/jerrysprite2.png");
+    
+    cheese = addImageCreateTexture("resources/cheese.png");
+    
+    tom = addImageCreateTexture("resources/tom.png");
+
 	//struct SDL_Rect to hold the position and size of the sprite
 	// SDL_Rect ->  x - the x location of the rectangle's upper left corner
 	//				y - the y location of the rectangle's upper left corer
 	//				w - the width of the rectangle
 	//				h - the height of the rectangle
-    SDL_Rect dest; 
+//   SDL_Rect destJerry; 
     
     //to define the position of the object on the screen
-    SDL_Rect destcheese; 
+    SDL_Rect destCheese; 
     
     //to define the position of tom
-    SDL_Rect destTom;
+//    SDL_Rect destTom;
     
     //SDL_QueryTexture - use this function to query the attribute of a texture
     //Syntax - SDL_QueryTexture(texture , format of texture , int* access , int* w , int* h)
     // w - a pointer to be filled in with the width of the texture in pixels
     // h - a pointer to be filled in with the height of the texture in pixels
-    SDL_QueryTexture(tex1, NULL, NULL, &dest.w, &dest.h);
+    SDL_QueryTexture(jerry, NULL, NULL, &destJerry.w, &destJerry.h);
     
     //to store the position of the cheese on the screen
-    SDL_QueryTexture(tex2, NULL, NULL, &destcheese.w, &destcheese.h);
+    SDL_QueryTexture(cheese, NULL, NULL, &destCheese.w, &destCheese.h);
 
 
     //to store the position of the tom on the screen
-    SDL_QueryTexture(tex3, NULL, NULL, &destTom.w, &destTom.h);
+    SDL_QueryTexture(tom, NULL, NULL, &destTom.w, &destTom.h);
     
     //fill in the values for size and position of the sprite
     //no need to resize as we have used a small image now
-//    dest.w /= 10;	//resize the sprite
-//    dest.h /= 10;	//resize the sprite
+//    destJerry.w /= 10;	//resize the sprite
+//    destJerry.h /= 10;	//resize the sprite
  
         
     //fill in the values foe the size and position of the sprite TOM
@@ -225,36 +288,39 @@ int main(int argc, char* argv[])
     
     
     //resize the cheese object
-    destcheese.w /= 15;
-	destcheese.h /= 15; 
+    destCheese.w /= 15;
+	destCheese.h /= 15; 
+	
+	//use current time as seed for random generator
+	srand(time(NULL)*100);
 	//set the destination coordinstes of the x and y
-	destcheese.x = 200;
-	destcheese.y = 100;
+	destCheese.x = rand() % (WINDOW_WIDTH-destCheese.w);
+	destCheese.y = rand() % (WINDOW_HEIGHT-destCheese.h);
     
     //to track the position of the sprite declare two variables
 	// start sprite in center of screen
-    float x_pos = (WINDOW_WIDTH - dest.w) / 2;
-    float y_pos = (WINDOW_HEIGHT - dest.h) / 2;
+    x_pos_jerry = (WINDOW_WIDTH - destJerry.w) / 2;
+    y_pos_jerry = (WINDOW_HEIGHT - destJerry.h) / 2;
     
     
     //to track the position of the sprite TOM declare two variables
-	// start sprite in center of screen
-    float x_pos_tom = (WINDOW_WIDTH - destTom.w);
-    float y_pos_tom = (WINDOW_HEIGHT - destTom.h);   
+	// start sprite in bottom right of screen
+    x_pos_tom = (WINDOW_WIDTH - destTom.w);
+    y_pos_tom = (WINDOW_HEIGHT - destTom.h);   
     
-   /* dest.x = (640 - dest.w) / 2; 	//center the sprite
-    dest.y = (480 - dest.h) / 2;	//center the sprite*/       //testing
+   /* destJerry.x = (640 - destJerry.w) / 2; 	//center the sprite
+    destJerry.y = (480 - destJerry.h) / 2;	//center the sprite*/       //testing
     
     // to track the velocity of the sprite we declare two variables
     // give sprite initial velocity
-    float x_vel = 0;
-    float y_vel = 0;
+    x_vel_jerry = 0;
+    y_vel_jerry = 0;
     
     
     // to track the velocity of the sprite TOMwe declare two variables
     // give sprite initial velocity
-    float x_vel_tom = SPEED_TOM;
-    float y_vel_tom = SPEED_TOM;
+    x_vel_tom = SPEED_TOM;
+    y_vel_tom = SPEED_TOM;
     
     // using keyboard to track the input from the user we declare four variables
     // keep track of which inputs are given
@@ -282,12 +348,12 @@ int main(int argc, char* argv[])
         //then divide the seconds by the number of sprites in our spritesheet, in this case 2
         //Using the modulus operator ensures that the sprite number wraps around,
 		// so it is never greater than 2 (remember that counting is always zero-based, so our sprites are numbered 0 to 1).
-        Uint32 sprite = (ticks / 100) % 2;
+        Uint32 jerrysprite = (ticks / 100) % 2;
         //we're passing in the sprite value (between 0 and 1, based on the current time) 
 		//multiplied by 78 (the width of a single sprite). So with each second that passes, 
 		//the sprite will be extracted from the image at x=0, then x=78.
-        SDL_Rect srcrect = { sprite * 78, 0, 78, 47 };//(x, y , w,h)
-        dest = { x_pos, y_pos, 78, 47 };
+        SDL_Rect srcJerry = { jerrysprite * 78, 0, 78, 47 };//(x, y , w,h)
+        destJerry = { x_pos_jerry, y_pos_jerry, 78, 47 };
 
         
         //SDL_PollEvent is a function to poll for currently pending events
@@ -298,11 +364,12 @@ int main(int argc, char* argv[])
         	//SDL_QUIT is defined for user requested quit
         	//handle keyboard events from the using SDL_KEYDOWN and SDL_KEYUP
         	//each key is defoined by a scan code preassigned to it 
-            switch (event.type) //test code
+            switch (event.type) 
             {
             case SDL_QUIT:
                 close_requested = 1;
                 break;
+                
             case SDL_KEYDOWN:
                 switch (event.key.keysym.scancode)
                 {
@@ -348,85 +415,9 @@ int main(int argc, char* argv[])
             }
         }
         
+        moveJerry(up,down,left,right);
         
-        //based on the keyboard input determine the keyboard input
-        // determine velocity
-        x_vel = y_vel = 0;
-        if (up && !down) y_vel = -SPEED_JERRY;
-        if (down && !up) y_vel = SPEED_JERRY;
-        if (left && !right) x_vel = -SPEED_JERRY;
-        if (right && !left) x_vel = SPEED_JERRY;
-        
-        
-        // collision detection with bounds
-        // to remain within the bounds of the window the x_pos and y_pos should remain within
-        // the screen co-ordinates (0,0), (0,480), (640,0) and (640,480)
-        /*if (x_pos <= 0)
-        {
-            x_pos = 0;
-            x_vel = -x_vel;
-        }
-        if (y_pos <= 0)
-        {
-            y_pos = 0;
-            y_vel = -y_vel;
-        }
-        if (x_pos >= 640 - dest.w) 
-        {
-            x_pos = 640 - dest.w;
-            x_vel = -x_vel;
-        }
-        if (y_pos >= 480 - dest.h)
-        {
-            y_pos = 480 - dest.h;
-            y_vel = -y_vel;
-        }*/
-        
-        // collision detection with bounds
-        if (x_pos <= 0) x_pos = 0;
-        if (y_pos <= 0) y_pos = 0;
-        if (x_pos >= WINDOW_WIDTH - dest.w) x_pos = WINDOW_WIDTH - dest.w;
-        if (y_pos >= WINDOW_HEIGHT - dest.h) y_pos = WINDOW_HEIGHT - dest.h;
-
-        // update positions according above calculations
-        x_pos += x_vel / 60;
-        y_pos += y_vel / 60;
-
-        // set the positions in the structc SDL_rect
-        dest.y = (int) y_pos;
-        dest.x = (int) x_pos;
-        
-        
-        //collision detection with bounds for tom
-        // collision detection with bounds
-        if (x_pos_tom <= 0)
-        {
-            x_pos_tom = 0;
-            x_vel_tom = -x_vel_tom;
-        }
-        if (y_pos_tom <= 0)
-        {
-            y_pos_tom = 0;
-            y_vel_tom = -y_vel_tom;
-        }
-        if (x_pos_tom >= WINDOW_WIDTH - destTom.w) 
-        {
-            x_pos_tom = WINDOW_WIDTH - destTom.w;
-            x_vel_tom = -x_vel_tom;
-        }
-        if (y_pos_tom >= WINDOW_HEIGHT - destTom.h)
-        {
-            y_pos_tom = WINDOW_HEIGHT - destTom.h;
-            y_vel_tom = -y_vel_tom;
-        }
-
-        // update positions
-        x_pos_tom += x_vel_tom / 60;
-        y_pos_tom += y_vel_tom / 60;
-
-        // set the positions in the struct
-        destTom.y = (int) y_pos_tom;
-        destTom.x = (int) x_pos_tom;
+        moveTom();
         
         
         
@@ -442,20 +433,20 @@ int main(int argc, char* argv[])
 	    // SDL_RenderCopy(renderer, source texture , scrrect , dstrect)
 	    // srcrect - the source SDL_Rect structure or NULL
 	    // dstrect - the destination SDL_Rect structure or NULL.
-	    SDL_RenderCopy(rend, tex, NULL, NULL);
+	    SDL_RenderCopy(rend, gamebackground, NULL, NULL);
 	    
 	    //to draw cheese on the screen
 	    //draw the sprite on the image on the window
-	    SDL_RenderCopy(rend, tex2, NULL, &destcheese);
+	    SDL_RenderCopy(rend, cheese, NULL, &destCheese);
 	    
 	    //draw the sprite on the image on the window
 	    // and to animate the sprite we use the newly formed SDL_Rect srcrect which contains the adderss of the 
 	    // two jerry sprites.
-	    SDL_RenderCopy(rend, tex1, &srcrect, &dest);
+	    SDL_RenderCopy(rend, jerry, &srcJerry, &destJerry);
 	    
 	    
 	    //draw the sprite on the image on the window
-	    SDL_RenderCopy(rend, tex3, NULL, &destTom);
+	    SDL_RenderCopy(rend, tom, NULL, &destTom);
 	    
 	    
 	    // use this function to update the screen with any rendering performed
@@ -471,7 +462,7 @@ int main(int argc, char* argv[])
 	    //to determine collosion we simply draw am imaginary rectangle around our objects
 	    //the size and position of these objects is stored in the struct SDL_Rect
 	    //SDL_HasIntersection returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise
-	    if(SDL_HasIntersection(&dest,&destcheese))
+	    if(SDL_HasIntersection(&destJerry,&destCheese))
 	    {
 	    	//To display a simple dialog box / message box 
 	    	//SDL_ShowSimpleMessageBox( flag , title , message , parent window)
@@ -481,7 +472,7 @@ int main(int argc, char* argv[])
 	    	// parent window - parent window or NULL for no parent
 	    	//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","Cheese collected",NULL);
 	    	//SDL_DestroyWindow(win);
-	    	SDL_DestroyTexture(tex2);
+	    	SDL_DestroyTexture(cheese);
 	    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","Cheese collected",NULL);
 	    	SDL_DestroyWindow(win);
 	    	SDL_Quit();
@@ -490,7 +481,7 @@ int main(int argc, char* argv[])
 	    
 	    
 	    //test code
-	    if(SDL_HasIntersection(&dest,&destTom))
+	    if(SDL_HasIntersection(&destJerry,&destTom))
 	    {
 	    	//To display a simple dialog box / message box 
 	    	//SDL_ShowSimpleMessageBox( flag , title , message , parent window)
@@ -500,7 +491,7 @@ int main(int argc, char* argv[])
 	    	// parent window - parent window or NULL for no parent
 	    	//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"You Win","Cheese collected",NULL);
 	    	//SDL_DestroyWindow(win);
-	    	SDL_DestroyTexture(tex1);
+	    	SDL_DestroyTexture(jerry);
 	    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,"GAME OVER!!","You loose....",NULL);
 	    	SDL_DestroyWindow(win);
 			SDL_Quit();
@@ -511,14 +502,8 @@ int main(int argc, char* argv[])
         SDL_Delay(1000/60);
 	}
     
-    //Call this function to shutdown each initialized subsystem
-    //clean all resources before shutdown
-    SDL_DestroyTexture(tex);
-    SDL_DestroyTexture(tex1);
-    SDL_DestroyTexture(tex2);
-    SDL_DestroyRenderer(rend);
-    SDL_DestroyWindow(win);
-    SDL_Quit();
     
+    destroyAll();
     return 0;
 }
+
